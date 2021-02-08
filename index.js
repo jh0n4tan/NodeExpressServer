@@ -1,11 +1,45 @@
+const { static } = require("express");
 const express = require("express"); //inicializar express
 const app = express(); //este es el servidor
+const morgan = require("morgan"); //middleware de tercero
+
+//settings
+
+app.set("appName","Variable de Configuracion");
+app.set("port","5000");
+app.set("veiw engine","ejs");
 
 
 
 
-//rutas
-app.use(express.json()); //se usa para que se vea el json
+//se ejecuta antes que llegue a la ruta original
+//el middleware se ejecuta antes de cualquier ruta
+function logger(req,res,next){
+    console.log("Request Received by protocol: " + req.protocol + "://" + req.get("host") + req.originalUrl);
+    next();
+}
+
+
+
+//middlewares
+app.use(express.json()); //se usa para que se vea el json(tambien es un middleware)
+//app.use(logger);//lamando al middelware
+app.use(morgan('dev')); //middelware morgan(terceros)
+
+
+
+
+
+
+
+
+
+
+
+
+
+//routes
+
 
 //se ejecutara primero all en todas las rutas que se llamen
 //como la misma
@@ -22,16 +56,18 @@ app.all("/",(req,res,next)=>{
     next();
 });
 
-
+/*
 app.get("/",(req,res) => {
     res.json({
         username: "sancho",
         lastname: "panza"
     });
 });
+*/
 
-app.get("/about",(req,res) => {
-    res.send("get recieved");
+app.get("/",(req,res) => {
+    const data = [{name:"olivia"},{name:"cocoliso"},{name:"pilon"}]
+    res.render("index.ejs",{people:data});
 });
 
 
@@ -51,7 +87,12 @@ app.delete("/about/:user",(req,res) => {
 });
 
 
-app.listen(3000,() => {
-    console.log("Server is runnign on port 3000");
+
+app.use(express.static("public"));
+
+
+app.listen(app.get("port"),() => {
+    console.log(app.get("appName"));
+    console.log("Server is runnign on port ", app.get("port"));
 });
 
